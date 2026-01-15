@@ -1,0 +1,18 @@
+package com.demo.insurance.claimrest.model;
+
+public enum ClaimStatus {
+  SUBMITTED,
+  IDENTITY_VERIFIED,
+  IDENTITY_FAILED,
+  POLICY_VALID,
+  POLICY_INVALID,
+  FRAUD_LOW,
+  FRAUD_MEDIUM,
+  FRAUD_HIGH,
+  REJECTED,
+  SUSPENDED,
+  APPROVED,
+  PAYMENT_AUTHORIZED,
+  PAYMENT_FAILED,
+  IN_REVIEW
+}

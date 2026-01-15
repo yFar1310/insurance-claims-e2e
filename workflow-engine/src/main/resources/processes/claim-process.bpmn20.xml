@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://demo.insurance/workflow">
+
+  <process id="claimProcess" name="Claim Process" isExecutable="true">
+
+    <startEvent id="start" name="Start"/>
+    <sequenceFlow id="f1" sourceRef="start" targetRef="verifyIdentity"/>
+
+    <serviceTask id="verifyIdentity" name="Verify Identity (SOAP)"
+                 flowable:delegateExpression="${verifyIdentityTask}"/>
+    <sequenceFlow id="f2" sourceRef="verifyIdentity" targetRef="gwIdentity"/>
+
+    <exclusiveGateway id="gwIdentity" name="Identity OK?"/>
+    <sequenceFlow id="f3_ok" sourceRef="gwIdentity" targetRef="validatePolicy">
+      <conditionExpression xsi:type="tFormalExpression">${identityOk == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f3_ko" sourceRef="gwIdentity" targetRef="rejectIdentity">
+      <conditionExpression xsi:type="tFormalExpression">${identityOk == false}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="rejectIdentity" name="Reject (REST update)"
+                 flowable:delegateExpression="${rejectTask}"/>
+    <sequenceFlow id="f_end1" sourceRef="rejectIdentity" targetRef="endRejected"/>
+
+    <serviceTask id="validatePolicy" name="Validate Policy (GraphQL)"
+                 flowable:delegateExpression="${policyValidationTask}"/>
+    <sequenceFlow id="f4" sourceRef="validatePolicy" targetRef="gwPolicy"/>
+
+    <exclusiveGateway id="gwPolicy" name="Covered?"/>
+    <sequenceFlow id="f5_ok" sourceRef="gwPolicy" targetRef="fraudCheck">
+      <conditionExpression xsi:type="tFormalExpression">${policyCovered == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f5_ko" sourceRef="gwPolicy" targetRef="rejectPolicy">
+      <conditionExpression xsi:type="tFormalExpression">${policyCovered == false}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="rejectPolicy" name="Reject (REST update)"
+                 flowable:delegateExpression="${rejectTask}"/>
+    <sequenceFlow id="f_end2" sourceRef="rejectPolicy" targetRef="endRejected"/>
+
+    <serviceTask id="fraudCheck" name="Fraud Detection (gRPC)"
+                 flowable:delegateExpression="${fraudTask}"/>
+    <sequenceFlow id="f6" sourceRef="fraudCheck" targetRef="gwFraud"/>
+
+    <exclusiveGateway id="gwFraud" name="High risk + big amount?"/>
+    <sequenceFlow id="f7_reject" sourceRef="gwFraud" targetRef="rejectFraud">
+      <conditionExpression xsi:type="tFormalExpression">${fraudReject == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f7_ok" sourceRef="gwFraud" targetRef="approve">
+      <conditionExpression xsi:type="tFormalExpression">${fraudReject == false}</conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="rejectFraud" name="Reject (REST update)"
+                 flowable:delegateExpression="${rejectTask}"/>
+    <sequenceFlow id="f_end3" sourceRef="rejectFraud" targetRef="endRejected"/>
+
+    <serviceTask id="approve" name="Approve (REST update)"
+                 flowable:delegateExpression="${approveTask}"/>
+    <sequenceFlow id="f_end_ok" sourceRef="approve" targetRef="endApproved"/>
+
+    <endEvent id="endRejected" name="Rejected"/>
+    <endEvent id="endApproved" name="Approved"/>
+
+  </process>
+</definitions>

@@ -1,0 +1,10 @@
+com\demo\insurance\workflow\tasks\VerifyIdentityTask$IdentityVerificationService.class
+com\demo\insurance\workflow\tasks\ClaimRestClient.class
+com\demo\insurance\workflow\tasks\VerifyIdentityTask.class
+com\demo\insurance\workflow\tasks\VerifyIdentityTask$VerificationResult.class
+com\demo\insurance\workflow\tasks\PolicyValidationTask.class
+com\demo\insurance\workflow\tasks\ApproveTask.class
+com\demo\insurance\workflow\WorkflowApplication.class
+com\demo\insurance\workflow\api\WorkflowController.class
+com\demo\insurance\workflow\tasks\FraudTask.class
+com\demo\insurance\workflow\tasks\RejectTask.class

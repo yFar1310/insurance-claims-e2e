@@ -1,0 +1,17 @@
+type Query {
+  policy(policyNumber: String!): Policy!
+  covers(policyNumber: String!, claimType: String!, claimedAmount: Float!): CoverageResult!
+}
+
+type Policy {
+  policyNumber: String!
+  valid: Boolean!
+  holderName: String
+  coverageLimit: Float!
+}
+
+type CoverageResult {
+  covered: Boolean!
+  reason: String!
+  maxPayable: Float!
+}

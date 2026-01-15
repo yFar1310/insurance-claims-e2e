@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.demo.insurance</groupId>
+    <artifactId>insurance-claims</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>workflow-engine</artifactId>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <spring.boot.version>3.2.5</spring.boot.version>
+    <grpc.version>1.64.0</grpc.version>
+  </properties>
+
+  <dependencies>
+    <!-- Flowable -->
+    <dependency>
+      <groupId>org.flowable</groupId>
+      <artifactId>flowable-spring-boot-starter-process</artifactId>
+      <version>7.0.0</version>
+    </dependency>
+
+    <!-- REST client -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- SOAP client -->
+    <dependency>
+      <groupId>com.sun.xml.ws</groupId>
+      <artifactId>jaxws-rt</artifactId>
+      <version>4.0.2</version>
+    </dependency>
+
+    <!-- gRPC client -->
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+
+    <!-- We will reuse the generated gRPC classes by depending on fraud-grpc module output -->
+    <dependency>
+      <groupId>com.demo.insurance</groupId>
+      <artifactId>fraud-grpc</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <!-- JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>
