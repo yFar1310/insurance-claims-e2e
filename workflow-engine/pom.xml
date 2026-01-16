@@ -10,23 +10,37 @@
   <artifactId>workflow-engine</artifactId>
 
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
-    <spring.boot.version>3.2.5</spring.boot.version>
+    <maven.compiler.release>11</maven.compiler.release>
     <grpc.version>1.64.0</grpc.version>
+    <flowable.version>7.0.1</flowable.version>
   </properties>
 
   <dependencies>
-    <!-- Flowable -->
+    <!-- Flowable Process Engine -->
     <dependency>
       <groupId>org.flowable</groupId>
       <artifactId>flowable-spring-boot-starter-process</artifactId>
-      <version>7.0.0</version>
+      <version>${flowable.version}</version>
     </dependency>
 
-    <!-- REST client -->
+    <!-- Flowable REST APIs (UI via Swagger) -->
+    <dependency>
+      <groupId>org.flowable</groupId>
+      <artifactId>flowable-spring-boot-starter-rest</artifactId>
+      <version>${flowable.version}</version>
+    </dependency>
+
+    <!-- Web (pour tes endpoints / orchestration si besoin) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Swagger UI -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.5.0</version>
     </dependency>
 
     <!-- SOAP client -->
@@ -53,23 +67,18 @@
       <version>${grpc.version}</version>
     </dependency>
 
-    <!-- We will reuse the generated gRPC classes by depending on fraud-grpc module output -->
+    <!-- reuse generated gRPC classes -->
     <dependency>
       <groupId>com.demo.insurance</groupId>
       <artifactId>fraud-grpc</artifactId>
       <version>1.0.0</version>
     </dependency>
 
-    <!-- JSON -->
+    <!-- H2 -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-
-    <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <scope>runtime</scope>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
@@ -78,6 +87,19 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- Important pour éviter tes erreurs "Name for argument not available" -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>11</release>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
       </plugin>
     </plugins>
   </build>

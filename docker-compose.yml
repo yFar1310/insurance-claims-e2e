@@ -1,0 +1,50 @@
+services:
+  flowable-ui:
+    image: flowable/flowable-ui:latest
+    ports:
+      - "8085:8080"
+
+  claim-service:
+    build: ./claim-service
+    ports:
+      - "8081:8081"
+
+  identity-soap:
+    build: ./identity-soap
+    ports:
+      - "8082:8082"
+
+  policy-graphql:
+    build: ./policy-graphql
+    ports:
+      - "8083:8083"
+
+  fraud-grpc:
+    build: ./fraud-grpc
+    ports:
+      - "9090:9090"
+
+  gateway:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./gateway:/app
+      - ./proto:/app/proto
+    command: sh -lc "npm i && node src/index.js"
+    environment:
+      PORT: "8090"
+      REST_CLAIM_URL: "http://claim-service:8081"
+      SOAP_WSDL_URL: "http://identity-soap:8082/ws/identity?wsdl"
+      GRAPHQL_URL: "http://policy-graphql:8083/graphql"
+      GRPC_ADDR: "fraud-grpc:9090"
+      GRPC_PROTO: "/app/proto/fraud.proto"
+      GRPC_PKG: "fraud"
+      GRPC_SVC: "FraudService"
+      GRPC_METHOD: "analyzeClaim"
+    ports:
+      - "8090:8090"
+    depends_on:
+      - claim-service
+      - identity-soap
+      - policy-graphql
+      - fraud-grpc

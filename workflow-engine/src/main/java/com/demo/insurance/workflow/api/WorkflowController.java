@@ -3,30 +3,35 @@ package com.demo.insurance.workflow.api;
 import org.flowable.engine.RuntimeService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/workflow")
 public class WorkflowController {
 
-  private final RuntimeService runtime;
+  private final RuntimeService runtimeService;
 
-  public WorkflowController(RuntimeService runtime) {
-    this.runtime = runtime;
+  public WorkflowController(RuntimeService runtimeService) {
+    this.runtimeService = runtimeService;
   }
 
   @PostMapping("/start/{claimId}")
-  public Map<String, Object> start(@PathVariable("claimId") String claimId, @RequestBody Map<String, Object> payload) {
-    // payload must contain: policyNumber, customerId, fullName, claimType, claimedAmount
-    var vars = new java.util.HashMap<String, Object>(payload);
+  public Map<String, Object> start(
+      @PathVariable("claimId") String claimId,
+      @RequestBody(required = false) Map<String, Object> body
+  ) {
+    Map<String, Object> vars = new HashMap<>();
     vars.put("claimId", claimId);
 
-    var pi = runtime.startProcessInstanceByKey("claimProcess", vars);
+    if (body != null) vars.putAll(body);
+
+    var pi = runtimeService.startProcessInstanceByKey("claimProcess", vars);
 
     return Map.of(
         "processInstanceId", pi.getId(),
-        "claimId", claimId,
-        "status", "STARTED"
+        "processDefinitionId", pi.getProcessDefinitionId(),
+        "claimId", claimId
     );
   }
 }
