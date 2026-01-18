@@ -1,0 +1,74 @@
+=== DEMO RUN @ 2026-01-18_15-37-58 ===
+--- smoke ---
+== Health checks ==
+{"time":"2026-01-18T14:37:58.917607Z","status":"UP","service":"claim-rest"}
+{"ok":true,"ts":"2026-01-18T14:37:58.964617Z"}
+== Start workflow (happy-ish) ==
+{"businessKey":"CLM-9d0e1aa0","processInstanceId":"48eafd9f-f47b-11f0-95b3-a860b6391a78"}
+claimId=CLM-9d0e1aa0
+processInstanceId=48eafd9f-f47b-11f0-95b3-a860b6391a78
+== State ==
+{"activityId":["ut_docs"],"state":"RUNNING","processInstanceId":"48eafd9f-f47b-11f0-95b3-a860b6391a78","claimId":"CLM-9d0e1aa0"}
+== History ==
+[{"at":"2026-01-18T14:37:59.008842Z","status":"SUBMITTED","message":"Claim submitted"}]
+== Tasks (if any) ==
+[{"taskDefinitionKey":"ut_docs","id":"4909d060-f47b-11f0-95b3-a860b6391a78","name":"Document Review (User Task)"}]
+
+--- happy path ---
+== Start workflow (happy path) ==
+{"businessKey":"CLM-5e5f9e9a","processInstanceId":"492d36e1-f47b-11f0-95b3-a860b6391a78"}
+claimId=CLM-5e5f9e9a
+pid=492d36e1-f47b-11f0-95b3-a860b6391a78
+== Fetch tasks ==
+[{"taskDefinitionKey":"ut_docs","id":"493b67d2-f47b-11f0-95b3-a860b6391a78","name":"Document Review (User Task)"}]
+== Complete Document Review (docsOk=true) ==
+{"ok":true}
+== Fetch tasks after docs ==
+[{"taskDefinitionKey":"ut_expert","id":"49524b39-f47b-11f0-95b3-a860b6391a78","name":"Expert Assessment (User Task)"}]
+== Complete Expert Assessment (expertApproved=true) ==
+{"ok":true}
+== Final State ==
+{"state":"FINISHED","claimId":"CLM-5e5f9e9a"}
+== Final History ==
+[{"at":"2026-01-18T14:37:59.439623Z","status":"SUBMITTED","message":"Claim submitted"},{"at":"2026-01-18T14:37:59.775060Z","status":"APPROVED","message":"Claim approved and paid"}]
+
+--- suspend missing docs ---
+== Start workflow (docs missing -> suspended) ==
+{"businessKey":"CLM-9a2f17c3","processInstanceId":"49795b4b-f47b-11f0-95b3-a860b6391a78"}
+claimId=CLM-9a2f17c3
+== Get tasks ==
+[{"taskDefinitionKey":"ut_docs","id":"49aeea5c-f47b-11f0-95b3-a860b6391a78","name":"Document Review (User Task)"}]
+== Complete docs with docsOk=false ==
+{"ok":true}
+== State (should be SUSPENDED) ==
+{"state":"FINISHED","claimId":"CLM-9a2f17c3"}
+== History ==
+[{"at":"2026-01-18T14:37:59.946052Z","status":"SUBMITTED","message":"Claim submitted"},{"at":"2026-01-18T14:38:00.448996Z","status":"SUSPENDED","message":"Documents missing or invalid"}]
+
+--- reject not covered (GraphQL) ---
+== Start workflow (not covered via GraphQL limit) ==
+{"businessKey":"CLM-578f9aba","processInstanceId":"49dab555-f47b-11f0-95b3-a860b6391a78"}
+claimId=CLM-578f9aba
+== State ==
+{"state":"FINISHED","claimId":"CLM-578f9aba"}
+== History (expect REJECTED: Policy does not cover this claim) ==
+[{"at":"2026-01-18T14:38:00.575436Z","status":"SUBMITTED","message":"Claim submitted"},{"at":"2026-01-18T14:38:00.597960Z","status":"REJECTED","message":"Policy does not cover this claim"}]
+
+--- reject fraud auto (gRPC) ---
+== Start workflow (fraud auto-reject: THEFT + amount>3000 => HIGH) ==
+{"businessKey":"CLM-144103d3","processInstanceId":"49ee1661-f47b-11f0-95b3-a860b6391a78"}
+claimId=CLM-144103d3
+== State ==
+{"state":"FINISHED","claimId":"CLM-144103d3"}
+== History (expect REJECTED: High fraud risk and amount above threshold) ==
+[{"at":"2026-01-18T14:38:00.717866Z","status":"SUBMITTED","message":"Claim submitted"},{"at":"2026-01-18T14:38:00.762192Z","status":"REJECTED","message":"High fraud risk and amount above threshold"}]
+
+--- reject identity (SOAP) ---
+== Start workflow (identity fail: policy ends with 0) ==
+{"businessKey":"CLM-520875d2","processInstanceId":"4a0ac644-f47b-11f0-95b3-a860b6391a78"}
+claimId=CLM-520875d2
+== State ==
+{"state":"FINISHED","claimId":"CLM-520875d2"}
+== History (expect REJECTED: Identity verification failed) ==
+[{"at":"2026-01-18T14:38:00.891352Z","status":"SUBMITTED","message":"Claim submitted"},{"at":"2026-01-18T14:38:00.902902Z","status":"REJECTED","message":"Identity verification failed"}]
+
