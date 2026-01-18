@@ -1,0 +1,37 @@
+server:
+  port: 8084
+  error:
+    include-message: always
+    include-exception: true
+    include-stacktrace: always
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:flowable;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+
+flowable:
+  async-executor-activate: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger
+  api-docs:
+    path: /api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+        
+app:
+  claimBaseUrl: "http://localhost:8081"
+  soapIdentityUrl: "http://localhost:8082/ws/identity"
+  graphqlUrl: "http://localhost:8083/graphql"
+  grpcHost: "localhost"
+  grpcPort: 9090

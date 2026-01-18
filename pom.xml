@@ -13,7 +13,7 @@
     <module>identity-soap</module>
     <module>policy-graphql</module>
     <module>fraud-grpc</module>
-    <module>workflow-engine</module>
+    <module>workflow-engine-clean</module>
   </modules>
 
   <properties>
@@ -32,4 +32,30 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+    <plugins>
+
+      <!-- Force Spring Boot plugin version for ALL modules -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+
+      <!-- Ensure parameter names are kept (fixes '-parameters' error) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>17</release>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </pluginManagement>
+</build>
 </project>

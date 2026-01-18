@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://demo.insurance/claim">
+
+  <process id="claimProcess" name="End-to-End Insurance Claim (Clean)" isExecutable="true">
+
+    <startEvent id="start" name="Start" />
+    <sequenceFlow id="f0" sourceRef="start" targetRef="t_submit_claim"/>
+
+    <!-- REST: create claim in claim-rest and store claimId + businessKey -->
+    <serviceTask id="t_submit_claim" name="Submit Claim (REST)"
+                 flowable:delegateExpression="${submitClaimTask}" />
+    <sequenceFlow id="f1" sourceRef="t_submit_claim" targetRef="t_identity"/>
+
+    <!-- SOAP: identity verification -->
+    <serviceTask id="t_identity" name="Verify Identity (SOAP)"
+                 flowable:delegateExpression="${verifyIdentityTask}" />
+    <sequenceFlow id="f2" sourceRef="t_identity" targetRef="g_identity"/>
+
+    <exclusiveGateway id="g_identity" name="Identity OK?" />
+    <sequenceFlow id="f3_yes" sourceRef="g_identity" targetRef="t_policy">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${identityOk == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f3_no" sourceRef="g_identity" targetRef="t_reject_identity">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${identityOk == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <!-- REST status update -->
+    <serviceTask id="t_reject_identity" name="Reject (Identity Failed)"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>REJECTED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>Identity verification failed</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_rej1" sourceRef="t_reject_identity" targetRef="end_rejected"/>
+
+    <!-- GraphQL: policy coverage -->
+    <serviceTask id="t_policy" name="Policy Coverage (GraphQL)"
+                 flowable:delegateExpression="${policyCoverageTask}" />
+    <sequenceFlow id="f4" sourceRef="t_policy" targetRef="g_covered"/>
+
+    <exclusiveGateway id="g_covered" name="Covered?" />
+    <sequenceFlow id="f4_yes" sourceRef="g_covered" targetRef="t_fraud">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${covered == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f4_no" sourceRef="g_covered" targetRef="t_reject_policy">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${covered == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="t_reject_policy" name="Reject (Not Covered)"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>REJECTED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>Policy does not cover this claim</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_rej2" sourceRef="t_reject_policy" targetRef="end_rejected"/>
+
+    <!-- gRPC: fraud -->
+    <serviceTask id="t_fraud" name="Fraud Detection (gRPC)"
+                 flowable:delegateExpression="${fraudTask}" />
+    <sequenceFlow id="f5" sourceRef="t_fraud" targetRef="g_rules"/>
+
+    <!-- XOR business rules -->
+    <exclusiveGateway id="g_rules" name="Auto Reject?" />
+    <sequenceFlow id="f5_rej" sourceRef="g_rules" targetRef="t_reject_fraud">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${fraudRisk == 'HIGH' && claimedAmount > 3000}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f5_ok" sourceRef="g_rules" targetRef="ut_docs">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!(fraudRisk == 'HIGH' && claimedAmount > 3000)}]]></conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="t_reject_fraud" name="Reject (High Risk)"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>REJECTED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>High fraud risk and amount above threshold</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_rej3" sourceRef="t_reject_fraud" targetRef="end_rejected"/>
+
+    <!-- User task: documents -->
+    <userTask id="ut_docs" name="Document Review (User Task)" />
+    <sequenceFlow id="f6" sourceRef="ut_docs" targetRef="g_docs"/>
+
+    <exclusiveGateway id="g_docs" name="Docs OK?" />
+    <sequenceFlow id="f6_yes" sourceRef="g_docs" targetRef="ut_expert">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${docsOk == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f6_no" sourceRef="g_docs" targetRef="t_suspend_docs">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${docsOk == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="t_suspend_docs" name="Suspend (Missing Docs)"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>SUSPENDED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>Documents missing or invalid</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_susp" sourceRef="t_suspend_docs" targetRef="end_suspended"/>
+
+    <!-- User task: expert decision -->
+    <userTask id="ut_expert" name="Expert Assessment (User Task)" />
+    <sequenceFlow id="f7" sourceRef="ut_expert" targetRef="g_expert"/>
+
+    <exclusiveGateway id="g_expert" name="Expert decision" />
+    <sequenceFlow id="f7_app" sourceRef="g_expert" targetRef="t_comp">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${expertDecision == 'APPROVE'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f7_rej" sourceRef="g_expert" targetRef="t_reject_expert">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${expertDecision == 'REJECT'}]]></conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="t_reject_expert" name="Reject (Expert)"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>REJECTED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>Rejected by expert assessment</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_rej4" sourceRef="t_reject_expert" targetRef="end_rejected"/>
+
+    <!-- compensation -->
+    <serviceTask id="t_comp" name="Compensation Calculation"
+                 flowable:delegateExpression="${compensationTask}" />
+    <sequenceFlow id="f8" sourceRef="t_comp" targetRef="t_payment"/>
+
+    <serviceTask id="t_payment" name="Payment Authorization"
+                 flowable:delegateExpression="${paymentTask}" />
+    <sequenceFlow id="f9" sourceRef="t_payment" targetRef="g_pay"/>
+
+    <exclusiveGateway id="g_pay" name="Payment OK?" />
+    <sequenceFlow id="f9_yes" sourceRef="g_pay" targetRef="t_approved">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${paymentOk == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f9_no" sourceRef="g_pay" targetRef="t_reject_payment">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${paymentOk == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="t_reject_payment" name="Reject (Payment Failed)"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>REJECTED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>Payment authorization failed</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_rej5" sourceRef="t_reject_payment" targetRef="end_rejected"/>
+
+    <serviceTask id="t_approved" name="Approved"
+                 flowable:delegateExpression="${updateStatusTask}">
+      <extensionElements>
+        <flowable:field name="status"><flowable:string>APPROVED</flowable:string></flowable:field>
+        <flowable:field name="message"><flowable:string>Claim approved and paid</flowable:string></flowable:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="f_end_ok" sourceRef="t_approved" targetRef="end_approved"/>
+
+    <endEvent id="end_approved" name="Done (Approved)" />
+    <endEvent id="end_rejected" name="Done (Rejected)" />
+    <endEvent id="end_suspended" name="Done (Suspended)" />
+
+  </process>
+</definitions>

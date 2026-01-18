@@ -9,12 +9,17 @@ public class PolicyQuery {
 
   @QueryMapping
   public Policy policy(@Argument("policyNumber") String policyNumber) {
-    // Never return null because schema says Policy!
     if (policyNumber == null) policyNumber = "";
-
-    boolean valid = policyNumber.startsWith("POL-");
-    double limit = policyNumber.endsWith("999") ? 500.0 : 5000.0;
-
+    String p = policyNumber.trim().toUpperCase();
+  
+    // Accept both formats: P-xxxx and POL-xxxx
+    boolean valid = p.startsWith("P-") || p.startsWith("POL-");
+  
+    // Demo coverage limit:
+    // - ends with 999 => low limit (fail often)
+    // - otherwise => high limit (happy path)
+    double limit = p.endsWith("999") ? 500.0 : 5000.0;
+  
     return new Policy(policyNumber, valid, "John Doe", limit);
   }
 

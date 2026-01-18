@@ -1,0 +1,11 @@
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/WorkflowEngineCleanApplication.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/api/WorkflowApiController.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/AppConfig.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/ClaimStatusUpdateTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/CompensationTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/FraudTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/PaymentTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/PolicyCoverageTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/SubmitClaimTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/UpdateStatusTask.java
+/Users/yahyafarehan/Desktop/insurance-claims-e2e/workflow-engine-clean/src/main/java/com/demo/insurance/workflowclean/tasks/VerifyIdentityTask.java

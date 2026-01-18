@@ -9,7 +9,7 @@ public class SoapPublisher implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
-    String address = "http://0.0.0.0:8081/ws/identity";
+    String address = "http://0.0.0.0:8082/ws/identity";
     Endpoint.publish(address, new IdentityVerificationService());
     System.out.println("[SOAP] IdentityVerificationService published at: " + address);
     System.out.println("[SOAP] WSDL available at: " + address + "?wsdl");
