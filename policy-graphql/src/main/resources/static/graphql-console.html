@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GraphQL Console</title>
+    <style>
+      body { font-family: system-ui, Arial; max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+      textarea, input { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      textarea { height: 220px; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      button { padding: 10px 14px; cursor: pointer; }
+      pre { background: #0b1020; color: #d7e0ff; padding: 12px; border-radius: 10px; overflow: auto; }
+      .hint { color: #555; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h2>GraphQL Console (local)</h2>
+    <p class="hint">No CDN, no GraphiQL, no CORS issues. Endpoint: <b>/graphql</b></p>
+
+    <label>Endpoint URL</label>
+    <input id="url" value="/graphql" />
+
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <label>Query</label>
+        <textarea id="query">{ policies { policyNumber valid coverageLimit coveredClaimTypes notes } }</textarea>
+      </div>
+      <div>
+        <label>Variables (JSON)</label>
+        <textarea id="vars">{}</textarea>
+      </div>
+    </div>
+
+    <button id="run" style="margin-top:12px;">Run</button>
+
+    <h3>Response</h3>
+    <pre id="out">{}</pre>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      $("run").addEventListener("click", async () => {
+        $("out").textContent = "Loading...";
+        let variables = {};
+        try { variables = JSON.parse($("vars").value || "{}"); }
+        catch (e) { $("out").textContent = "Invalid JSON variables: " + e.message; return; }
+
+        const body = { query: $("query").value, variables };
+
+        try {
+          const res = await fetch($("url").value, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          const txt = await res.text();
+          $("out").textContent = txt;
+        } catch (e) {
+          $("out").textContent = "Request failed: " + e.message;
+        }
+      });
+    </script>
+  </body>
+</html>

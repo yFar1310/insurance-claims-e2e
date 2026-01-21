@@ -1,0 +1,6 @@
+com\demo\insurance\fraudgrpc\FraudClient.class
+com\demo\insurance\fraudgrpc\FraudReply.class
+com\demo\insurance\fraudgrpc\FraudReply$Builder.class
+com\demo\insurance\fraudgrpc\FraudProto.class
+com\demo\insurance\fraudgrpc\FraudReplyOrBuilder.class
+com\demo\insurance\fraudgrpc\FraudReply$1.class

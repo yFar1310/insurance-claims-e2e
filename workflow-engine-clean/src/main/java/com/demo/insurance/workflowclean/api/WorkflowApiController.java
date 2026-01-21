@@ -57,7 +57,13 @@ public class WorkflowApiController {
     // We will create the claim INSIDE the workflow (first service task)
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("claimProcess", vars);
 
-    return Map.of("processInstanceId", pi.getId(), "businessKey", pi.getBusinessKey());
+    ProcessInstance refreshed = runtimeService.createProcessInstanceQuery()
+   .processInstanceId(pi.getId())
+   .singleResult();
+
+   String businessKey = refreshed != null ? refreshed.getBusinessKey() : pi.getBusinessKey();
+
+   return Map.of("processInstanceId", pi.getId(), "businessKey", businessKey);
   }
 
   @GetMapping("/claims/{claimId}/tasks")

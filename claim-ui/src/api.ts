@@ -78,6 +78,12 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export function wfTasksByClaim(claimId: string) {
+  return fetchJson<TaskDto[]>(
+    `/wf/api/workflow/claims/${encodeURIComponent(claimId)}/tasks`
+  );
+}
+
 // Workflow (via proxy /wf -> 8084)
 export function wfStart(body: WorkflowStartReq) {
   return fetchJson<WorkflowStartRes>("/wf/api/workflow/start", {

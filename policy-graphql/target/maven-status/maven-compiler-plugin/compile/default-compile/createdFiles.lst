@@ -1,4 +1,4 @@
-com/demo/insurance/policygraphql/Policy.class
-com/demo/insurance/policygraphql/PolicyGraphqlApplication.class
-com/demo/insurance/policygraphql/PolicyQuery.class
-com/demo/insurance/policygraphql/CoverageResult.class
+com\demo\insurance\policygraphql\CoverageResult.class
+com\demo\insurance\policygraphql\PolicyGraphqlApplication.class
+com\demo\insurance\policygraphql\PolicyQuery.class
+com\demo\insurance\policygraphql\Policy.class

@@ -1,4 +1,5 @@
 type Query {
+  policies: [Policy!]!
   policy(policyNumber: String!): Policy!
   covers(policyNumber: String!, claimType: String!, claimedAmount: Float!): CoverageResult!
 }
@@ -8,6 +9,8 @@ type Policy {
   valid: Boolean!
   holderName: String
   coverageLimit: Float!
+  coveredClaimTypes: [String!]!
+  notes: String
 }
 
 type CoverageResult {
