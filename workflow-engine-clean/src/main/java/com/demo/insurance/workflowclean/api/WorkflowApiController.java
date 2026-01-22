@@ -139,4 +139,27 @@ public Map<String, Object> state(@PathVariable("claimId") String claimId) {
     }
     return out;
   }
+
+  @GetMapping("/tasks/active")
+public List<Map<String, Object>> activeTasks() {
+  List<Task> tasks = taskService.createTaskQuery().active().list();
+
+  List<Map<String, Object>> out = new ArrayList<>();
+  for (Task t : tasks) {
+    ProcessInstance pi = runtimeService.createProcessInstanceQuery()
+      .processInstanceId(t.getProcessInstanceId())
+      .singleResult();
+
+    String claimId = (pi != null) ? pi.getBusinessKey() : null;
+
+    out.add(Map.of(
+      "id", t.getId(),
+      "name", t.getName(),
+      "taskDefinitionKey", t.getTaskDefinitionKey(),
+      "processInstanceId", t.getProcessInstanceId(),
+      "claimId", claimId
+    ));
+  }
+  return out;
+}
 }

@@ -117,3 +117,25 @@ export function claimGet(claimId: string) {
 export function claimHistory(claimId: string) {
   return fetchJson<ClaimHistoryEvent[]>(`/claim/claims/${encodeURIComponent(claimId)}/history`);
 }
+
+export type ActiveTaskDto = {
+    id: string;
+    name: string;
+    taskDefinitionKey: string;
+    processInstanceId: string;
+    claimId: string | null;
+  };
+  
+  export async function wfActiveTasks(): Promise<ActiveTaskDto[]> {
+    return fetchJson<ActiveTaskDto[]>("wf/api/workflow/tasks/active");
+  }
+
+  export function claimList() {
+    return fetchJson<Claim[]>(`/claim/claims`);
+  }
+  
+  export function claimDelete(claimId: string) {
+    return fetchJson<{ ok: boolean; id: string }>(`/claim/claims/${encodeURIComponent(claimId)}`, {
+      method: "DELETE",
+    });
+  }

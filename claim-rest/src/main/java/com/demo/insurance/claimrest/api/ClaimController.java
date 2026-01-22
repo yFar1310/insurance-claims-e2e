@@ -95,5 +95,18 @@ public Object updateStatus(
   var updated = store.updateStatus(id, st, body.message() == null ? "" : body.message());
   return updated.orElseThrow(() -> new NotFound("Claim not found: " + id));
 }
+
+@PutMapping("/{id}")
+public Claim update(@PathVariable String id, @RequestBody ClaimUpdateRequest body) {
+  if (body == null) throw new BadRequest("body is required");
+  return store.updateClaim(id, body).orElseThrow(() -> new NotFound("Claim not found: " + id));
+}
+
+@DeleteMapping("/{id}")
+@ResponseStatus(HttpStatus.NO_CONTENT)
+public void delete(@PathVariable String id) {
+boolean ok = store.delete(id);
+if (!ok) throw new NotFound("Claim not found: " + id);
+}
 }
 

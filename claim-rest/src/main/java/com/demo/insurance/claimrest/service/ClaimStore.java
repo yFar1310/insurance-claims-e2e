@@ -58,4 +58,23 @@ public class ClaimStore {
     return Optional.of(c);
   }
 
+  public Optional<Claim> updateClaim(String id, ClaimUpdateRequest body) {
+    Claim c = claims.get(id);
+    if (c == null) return Optional.empty();
+  
+    if (body.customerId() != null && !body.customerId().isBlank()) c.customerId = body.customerId();
+    if (body.fullName() != null && !body.fullName().isBlank()) c.fullName = body.fullName();
+    if (body.policyNumber() != null && !body.policyNumber().isBlank()) c.policyNumber = body.policyNumber();
+    if (body.claimType() != null) c.claimType = body.claimType();
+    if (body.claimedAmount() != null) c.claimedAmount = body.claimedAmount();
+    if (body.description() != null) c.description = body.description();
+  
+    c.history.add(new ClaimHistoryEvent(Instant.now(), c.status, "Claim updated (admin)"));
+    return Optional.of(c);
+  }
+  
+  public boolean delete(String id) {
+    return claims.remove(id) != null;
+  }
+
 }
